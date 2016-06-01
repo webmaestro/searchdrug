@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Drug Search via Angular &amp; JSON</title>
+  <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
+  <!--
+  https://dev.karmadata.com/API/Entity/DrugRxNorm/AutoComplete/JSON?start=1&rowsperpage=20&app=
+  -->
+  <style type="text/css">
+    td {
+      vertical-align: top;
+    }
+    th {
+      border-bottom: 1px solid #999;
+      vertical-align: bottom;
+    }
+  </style>
+</head>
+<body>
+  <div ng-app="searchDrug" ng-controller="searchDrugController"> 
+    <table cellpadding="3" cellspacing="0" border="0" style="width: 100%">
+      <thead>
+        <tr>
+          <th style="width: 15%;">Drug&#160;ID&#160;(RXCUI)</th>
+          <th style="width: 70%;">Dose Form</th>
+          <th style="width: 15%;">Ingredient</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="x in drugs.Result">
+          <td>{{ x.RXCUI }}</td>
+          <td>{{ x.Ingredient }}</td>
+          <td>{{ x.DoseForm }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  
+  <div style="text-align: center;">
+    <form action="" method="get">
+      <label for="searchDrugText">Search Drug: </label><input name="q" type="text" placeholder="Search for a different Drug" value="" tabindex="1" autocomplete="off" maxlength="240" style="width: 194px; max-width: 194px;" id="searchDrugText" />
+    </form>
+    <p>Tip: You can type a snippet (e.g., <tt>aceta</tt> to find 'Acetaminophen' drugs)</p>
+  </div>
+
+  <script>
+  function getParameterByName(name, url) {
+      if (!url) url = window.location.href;
+      name = name.replace(/[\[\]]/g, "\\$&");
+      var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+          results = regex.exec(url);
+      if (!results) return null;
+      if (!results[2]) return '';
+      return decodeURIComponent(results[2].replace(/\+/g, " "));
+  }
+
+  if (getParameterByName('q') != '') {
+    q = getParameterByName('q');
+    document.getElementById('searchDrugText').value = getParameterByName('q');
+  }
+
+
+  var app = angular.module('searchDrug', []);
+  app.controller('searchDrugController', function($scope, $http) {
+
+    var searchDrugDomain = (getParameterByName('domain')) ? getParameterByName('domain') : 'dev.karmadata.com';
+    var searchDrugPath = (getParameterByName('path')) ? getParameterByName('path') : '/API/Entity/DrugRxNorm/AutoComplete/JSON';
+
+    var searchDrugStart = (getParameterByName('start')) ? '&start='+getParameterByName('start') : '';
+    var searchDrugRowsperpage = (getParameterByName('rowsperpage')) ? '&rowsperpage='+getParameterByName('rowsperpage') : '';
+    var searchDrugApp = (getParameterByName('app')) ? '&app='+getParameterByName('app') : '';
+    var searchDrugQ = (getParameterByName('q')) ? '&q='+getParameterByName('q') : '&q=ibuprofen';
+
+    var searchDrugQuery = "https://"+searchDrugDomain+searchDrugPath+"?"+searchDrugStart+searchDrugRowsperpage+searchDrugApp+searchDrugQ;
+
+    $http.get(searchDrugQuery)
+    .success(function(response) {$scope.drugs = response;});
+    console.log('Query term: '+q);
+    console.log('Search Drug Query: '+searchDrugQuery)
+  });
+  </script>
+
+</body>
+</html>
